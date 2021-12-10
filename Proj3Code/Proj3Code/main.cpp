@@ -2,7 +2,6 @@
 //  main.cpp
 //  Proj3Code
 //
-//  Created by Mariano Patino-Paul on 12/9/21.
 //
 
 #include <fstream>
@@ -37,62 +36,36 @@ struct Song {
         
     }
     
-//    Song(string artist_name, string track_name, double f_energy, double f_danceability, double f_loudness, double f_valence, double f_popularity) {
-//
-//        this->artist_name = artist_name;
-//        this->track_name = track_name;
-//        this->f_energy = f_energy;
-//        this->f_danceability = f_danceability;
-//        this->f_loudness = f_loudness;
-//        this->f_valence = f_valence;
-//        this->f_popularity = f_popularity;
-//
-//    }
-    
 };
 
 class BST {
     
-    struct node {
+    struct Node {
         
         double key;
-        node* left;
-        node* right;
+        Node* left;
+        Node* right;
         vector<Song> vec;
         
-        node() {
+        Node() {
             key = 0;
             left = right = nullptr;
         }
         
-        node(Song s) {
+        Node(Song s) {
             key = s.key;
             vec.push_back(s);
         }
         
     };
 
-    node* root;
-
-    node* makeEmpty(node* r) {
-        
-        if (r == NULL)
-            return NULL;
-        
-        {
-            makeEmpty(r->left);
-            makeEmpty(r->right);
-            delete r;
-        }
-        
-        return NULL;
-    }
-
+    Node* root;
+    
     // Song s
-    node* insert(Song s, node* root) {
+    Node* insert(Song s, Node* root) {
         
         if (root == NULL) {
-            root = new node;
+            root = new Node;
             root->key = s.key;
             root->vec.push_back(s);
             root->left = root->right = NULL;
@@ -114,7 +87,7 @@ class BST {
         
     }
 
-    void ascendingInorder(node* t, int& c, string g) {
+    void ascendingInorder(Node* t, int& c, string g) {
         
         if (c < 0) {
             return;
@@ -147,7 +120,7 @@ class BST {
         
     }
     
-    void descendingReverse(node* t, int& c, string g) {
+    void descendingReverse(Node* t, int& c, string g) {
         
         if (c < 0) {
             return;
@@ -186,27 +159,19 @@ public:
     BST() {
         root = NULL;
     }
-
-    ~BST() {
-        root = makeEmpty(root);
-    }
-
+    
     void insert(Song s, double k) {
-        
         s.key = k;
-        
         root = insert(s, root);
     }
 
 
     void displayAscending(int count, string g) {
-            
         ascendingInorder(root, count, g);
         cout << endl;
     }
     
     void displayDescending(int count, string g) {
-            
         descendingReverse(root, count, g);
         cout << endl;
     }
@@ -217,7 +182,6 @@ public:
 vector<Song> getDataFromCSV(string filepath) {
 
     vector<Song> SONG_VECTOR;
-
     ifstream infile(filepath);
 
     if (infile.is_open()) {
@@ -325,13 +289,6 @@ int main(int argc, const char * argv[]) {
 
     auto duration = duration_cast<milliseconds>(stop - start);
     cout << "||| The BST sort of 130,000 songs took " << duration.count() << " milliseconds ||| \n" << endl;
-    
-    /*
-     
-     CALCULATE TIME IT TOOK !!!!
-     
-     */
-    
     
     string arr[5] = {"Valence: ", "Energy: ", "Danceability: ", "Loudness: ", "Popularity: "};
 
