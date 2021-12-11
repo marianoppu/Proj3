@@ -8,6 +8,7 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
+#include <list>
 #include <iostream>
 using namespace std::chrono;
 using namespace std;
@@ -37,6 +38,136 @@ struct Song {
     }
     
 };
+
+struct Song2 {
+
+    double key;
+    Song so;
+
+    Song2() {
+        key = 0;
+
+    }
+
+    Song2(Song s, double k) {
+        key = k;
+        so = s;
+    }
+
+    // Get at index method for list
+    Song2 get(list<Song2> _list, int _i){
+        list<Song2>::iterator it = _list.begin();
+        for(int i=0; i<_i; i++){
+            ++it;
+        }
+        return *it;
+    }
+    
+};
+
+class Hash {
+    
+    int BUCKET;
+    list<Song2>* table;
+    
+    public:
+    Hash(int V);  // Constructor
+
+    void insertItem(Song song, double key);
+    
+    void deleteItem( double key );
+
+    double hashFunction(double x) {
+        
+        if (x > -1 && x < 1) {
+            x *= 10000; // Get rid of decimals when the value is strictly a double
+        }
+        else if (x > -60 && x < 1) {
+            x *= 1000;
+        }
+        
+        return ((int)x % BUCKET);
+        
+    }
+
+    void printUp(string criteria, int& times);
+
+    void printDown(string criteria, int& times);
+};
+
+// Creates a list of Songs of size #buckets
+Hash::Hash(int b) {
+    this->BUCKET = b;
+    table = new list<Song2>[BUCKET];
+}
+
+void Hash::insertItem(Song song, double key) {
+    int index = hashFunction(key);
+    Song2 s(song, key);
+    table[index].push_back(s);
+}
+
+void Hash::printUp(string criteria, int& times) {
+    
+        
+    if (times > 0) {
+        
+        for (int i = 0; i < BUCKET; i++) {
+            cout << criteria << i << endl;
+            for (auto x : table[i]) {
+                cout  << x.so.track_name << " - " << x.so.artist_name << endl;
+                times--;
+                
+                if (times <= 0) return;
+                
+            }
+            cout << endl;
+        }
+        
+    } else {
+        return;
+    }
+    
+}
+
+void Hash::printDown(string criteria, int& times) {
+
+    
+    if (times > 0) {
+        
+        for (int i = BUCKET; i > 0; i--) {
+            
+            if (table[i].empty()) continue;
+            
+            cout << criteria;
+            
+            // Print criteria value (i) depending on the type of data
+            if (criteria == "Energy: " || criteria == "Danceability: " || criteria == "Valence: ") {
+                cout << (double)i/10000 << endl;
+            }
+            else if (criteria == "Loudness: ") {
+                cout << (double)i/1000 << endl;
+            } else {
+                cout << i << endl;
+            }
+               
+            // Iterate through songs in map
+            list<Song2>::iterator it;
+            for (it = table[i].begin(); it != table[i].end(); ++it){
+                cout << it->so.track_name << " - " << it->so.artist_name << endl;
+                times--;
+                if (times <= 0) return;
+            }
+            
+            cout << endl;
+        }
+        
+    } else {
+        return;
+    }
+    
+
+}
 
 class BST {
     
@@ -287,11 +418,12 @@ int main(int argc, const char * argv[]) {
     
     auto stop = high_resolution_clock::now();
 
-    auto duration = duration_cast<milliseconds>(stop - start);
-    cout << "||| The BST sort of 130,000 songs took " << duration.count() << " milliseconds ||| \n" << endl;
-    
     string arr[5] = {"Valence: ", "Energy: ", "Danceability: ", "Loudness: ", "Popularity: "};
 
+    auto duration = duration_cast<milliseconds>(stop - start);
+    
+    cout << "||| The BST sort of 130,000 songs took " << duration.count() << " milliseconds ||| \n" << endl;
+    
     if (order == 1) {
         t.displayAscending(numberOfSongs, arr[category-1]);
     }
@@ -299,6 +431,53 @@ int main(int argc, const char * argv[]) {
     if (order == 2) {
         t.displayDescending(numberOfSongs, arr[category-1]);
     }
+        
+    /*
+     
+     HASH TABLE
+     
+     */
+    
+    auto start2 = high_resolution_clock::now();
+
+    Hash hashTable(song_vector.size());
+
+        for (int i = 0; i<song_vector.size(); i++) {
+
+            if (category == 1) {
+                hashTable.insertItem(song_vector[i], song_vector[i].f_valence);
+            }
+            else if (category == 2) {
+                hashTable.insertItem(song_vector[i], song_vector[i].f_energy);
+            }
+            else if (category == 3) {
+                hashTable.insertItem(song_vector[i], song_vector[i].f_danceability);
+            }
+            else if (category == 4) {
+                hashTable.insertItem(song_vector[i], song_vector[i].f_loudness);
+            }
+            else if (category == 5) {
+                hashTable.insertItem(song_vector[i], song_vector[i].f_popularity);
+            }
+
+        }
+    
+    auto stop2 = high_resolution_clock::now();
+    auto duration2 = duration_cast<milliseconds>(stop2 - start2);
+
+    cout << "||| The Hash Table sort of 130,000 songs took " << duration2.count() << " milliseconds ||| \n" << endl;
+
+        if (order == 1) {
+            int hashTimes = numberOfSongs;
+            hashTable.printUp(arr[category-1], hashTimes);
+        }
+
+        if (order == 2) {
+            int hashTimes = numberOfSongs;
+            hashTable.printDown(arr[category-1], hashTimes);
+        }
+    
+    cout << "\n ||| Nice! We discovered that the Hash Table is way faster than the BST!!! ||| \n" << endl;
 
 }
 
